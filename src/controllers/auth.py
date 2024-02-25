@@ -1,20 +1,21 @@
 import asyncio
 import base64
 import io
+from typing import Optional
 
-import qrcode
+from sqlalchemy.orm import Session
+
 from pyotp import random_base32, totp
 
-from src.core.config import settings
+from ..config.config import settings
 
-from ..core.database import DBManager
-from ..core.exceptions import BadRequestException, CustomException, UnauthorizedException
-from ..core.redis.client import RedisManager
-from ..repository.jwt import JWTHandler
-from ..repository.password import PasswordHandler
-from ..repository.users import UserRepository
-from ..schema.out.auth import Token
-from ..schema.out.user import UserOut, UserOutRegister
+from ..helpers.exceptions import BadRequestException, CustomException, UnauthorizedException
+from ..database.redis_client import RedisManager
+from ..repositories.jwt import JWTHandler
+from ..repositories.password import PasswordHandler
+from ..repositories.users import UserRepository
+from ..schemas.auth import Token
+from ..schemas.user import UserOut, UserQuery
 
 
 class AuthController:
@@ -24,15 +25,15 @@ class AuthController:
 
     def __init__(
         self,
-        db_session: DBManager,
-        redis_session: RedisManager | None = None,
-        user_adaptor: UserRepository | None = None,
+        db_session: Session,
+        redis_session: Optional[RedisManager] = None,
+        user_adaptor: Optional[UserRepository] = None,
     ):
         self.user_adaptor = user_adaptor or self.user_adaptor
         self.db_session = db_session
         self.redis_session = redis_session
 
-    async def register(self, password: str, username: str) -> UserOutRegister:
+    async def register(self, password: str, username: str) -> UserQuery:
         user = await self.user_adaptor.get_by_username(username, db_session=self.db_session)
 
         if user:
@@ -48,13 +49,11 @@ class AuthController:
         assert user is not None
         provisioning_uri = totp.TOTP(user.gauth).provisioning_uri()
         buffered = io.BytesIO()
-        qrcode.make(provisioning_uri).save(buffered)
-        return UserOutRegister(
+        return UserQuery(
             username=user.username,
             updated_at=user.updated_at,
             created_at=user.created_at,
             gauth=user.gauth,
-            qr_img=base64.b64encode(buffered.getvalue()).decode(),
         )
 
     async def login(self, username: str, password: str) -> Token:

@@ -3,8 +3,8 @@ from typing import Any, Dict
 
 from jose import ExpiredSignatureError, JWTError, jwt
 
-from ..core.config import settings
-from ..core.exceptions import CustomException
+from ..config.config import settings
+from ..helpers.exceptions import CustomException
 
 
 class JWTDecodeError(CustomException):

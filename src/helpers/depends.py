@@ -1,10 +1,11 @@
 from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from .controllers.auth import AuthController
-from .core.database import DBManager, get_db
-from .core.exceptions import ForbiddenException
-from .repository.jwt import JWTHandler
+from src.controllers.auth import AuthController
+from src.database.database import get_db
+from src.helpers.exceptions import ForbiddenException
+from src.repositories.jwt import JWTHandler
+from sqlalchemy.orm import Session
 
 http_bearer = HTTPBearer()
 
@@ -46,6 +47,6 @@ async def get_current_user_with_refresh(
 
 
 async def get_current_user_from_db(
-    db_session: DBManager = Depends(get_db), user_id: str = Depends(get_current_user)
+    db_session: Session = Depends(get_db), user_id: str = Depends(get_current_user)
 ):
     return await AuthController(db_session).me(user_id)

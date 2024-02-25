@@ -2,11 +2,14 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.automap import automap_base
 
-engine = create_engine(url="postgresql://root:8udQgORdzInF3xx3WGDrJhSI@tai.liara.cloud:31299/baxi")
+from src.config import config
+
+engine = create_engine(url=config.settings.DATABASE_URL)
 
 # Map Existing Tables to Base Model
 Base = automap_base()
 Base.prepare(engine, reflect=True)
+Base.metadata.create_all(engine)
 
 session_local = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 

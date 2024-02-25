@@ -20,6 +20,4 @@ class UserOut(BaseModel):
     created_at: datetime.datetime
 
 
-class UserOutRegister(UserQuery):
-    qr_img: str
 
