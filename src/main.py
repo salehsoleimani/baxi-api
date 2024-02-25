@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from db.database import Base
-from db.database import engine
-from routers import user
+from src.database.database import Base
+from src.database.database import engine
+from src.routers import user
 
 app = FastAPI()
 app.include_router(user.router)
