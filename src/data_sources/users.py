@@ -11,21 +11,21 @@ class UserAdaptor:
         return [getattr(User, field) for field in UserQuery.__fields__]
 
     @staticmethod
-    def get_by_username(username: str):
-        return sa.select(User).where(func.lower(User.username) == func.lower(username))
+    def get_by_phone_number(phone_number: str):
+        return sa.select(User).where(func.lower(User.phone_number) == func.lower(phone_number))
 
     @staticmethod
     def get_by_id(user_id: str):
         return sa.select(User).where(User.id == user_id)
 
     @staticmethod
-    def query_by_username(username: str):
-        return sa.select(*UserAdaptor.get_selects()).where(User.username.ilike(username))
+    def query_by_phone_number(phone_number: str):
+        return sa.select(*UserAdaptor.get_selects()).where(User.phone_number.ilike(phone_number))
 
     @staticmethod
     def query_by_id(user_id: str):
         return sa.select(*UserAdaptor.get_selects()).where(User.id == user_id)
 
     @staticmethod
-    def create(username: str, password: str, gauth: str):
-        return User(username=username, password=password, gauth=gauth)
+    def create(name: str, last_name: str, phone_number: str):
+        return User(name=name, last_name=last_name, phone_number=phone_number)

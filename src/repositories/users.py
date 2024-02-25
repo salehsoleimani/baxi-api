@@ -18,18 +18,18 @@ class UserRepository:
         return user._mapping.get("User", user._mapping)
 
     async def get_and_create(
-        self, username: str, password: str, gauth: str, db_session: Session
+            self, name: str, last_name: str, phone_number: str, db_session: Session
     ):
-        create_query = self.adaptor.create(password=password, username=username, gauth=gauth)
+        create_query = self.adaptor.create(name=name, last_name=last_name, phone_number=phone_number)
         async with db_session.begin() as session:
             session.add(create_query)
             await session.flush()
-            query = self.adaptor.query_by_username(username)
+            query = self.adaptor.query_by_phone_number(phone_number)
             user = (await session.execute(query)).first()
         return UserRepository.base_return(user)
 
-    async def get_by_username(self, username: str, db_session: Session):
-        query = self.adaptor.get_by_username(username)
+    async def get_by_phone_number(self, phone_number: str, db_session: Session):
+        query = self.adaptor.get_by_phone_number(phone_number)
         async with db_session.begin() as session:
             user = (await session.execute(query)).first()
         return UserRepository.base_return(user)

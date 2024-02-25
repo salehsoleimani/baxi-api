@@ -12,7 +12,6 @@ from ..config.config import settings
 from ..helpers.exceptions import BadRequestException, CustomException, UnauthorizedException
 from ..database.redis_client import RedisManager
 from ..repositories.jwt import JWTHandler
-from ..repositories.password import PasswordHandler
 from ..repositories.users import UserRepository
 from ..schemas.auth import Token
 from ..schemas.user import UserOut, UserQuery
@@ -20,49 +19,46 @@ from ..schemas.user import UserOut, UserQuery
 
 class AuthController:
     user_adaptor = UserRepository()
-    password_handler = PasswordHandler
     jwt_handler = JWTHandler
 
     def __init__(
-        self,
-        db_session: Session,
-        redis_session: Optional[RedisManager] = None,
-        user_adaptor: Optional[UserRepository] = None,
+            self,
+            db_session: Session,
+            redis_session: Optional[RedisManager] = None,
+            user_adaptor: Optional[UserRepository] = None,
     ):
         self.user_adaptor = user_adaptor or self.user_adaptor
         self.db_session = db_session
         self.redis_session = redis_session
 
-    async def register(self, password: str, username: str) -> UserQuery:
-        user = await self.user_adaptor.get_by_username(username, db_session=self.db_session)
+    #todo: implement OTP
+    async def register(self, name: str, last_name: str, phone_number: str) -> UserQuery:
+        user = await self.user_adaptor.get_by_phone_number(phone_number, db_session=self.db_session)
 
         if user:
-            raise BadRequestException("User already exists with this username")
+            raise BadRequestException("User already exists with this phone number")
 
-        password = self.password_handler.hash(password)
         user = await self.user_adaptor.get_and_create(
-            username=username,
-            password=password,
-            gauth=str(random_base32()),
+            name=name,
+            last_name=last_name,
+            phone_number=phone_number,
             db_session=self.db_session,
         )
         assert user is not None
-        provisioning_uri = totp.TOTP(user.gauth).provisioning_uri()
-        buffered = io.BytesIO()
         return UserQuery(
-            username=user.username,
+            phone_number=user.phone_number,
             updated_at=user.updated_at,
             created_at=user.created_at,
-            gauth=user.gauth,
         )
 
-    async def login(self, username: str, password: str) -> Token:
+    async def login(self, phone_number: str) -> Token:
         if not self.redis_session:
-            raise CustomException("Database connection is not initialized")
+            raise CustomException("Redis connection is not initialized")
 
-        user = await self.user_adaptor.get_by_username(username, db_session=self.db_session)
+        user = await self.user_adaptor.get_by_phone_number(phone_number, db_session=self.db_session)
         print(user)
-        if (not user) or (not self.password_handler.verify(user.password, password)):
+        # if (not user) or #todo: check otp
+        if not user:
             raise BadRequestException("Invalid credentials")
 
         refresh_token = self.jwt_handler.encode_refresh_token(
@@ -100,11 +96,11 @@ class AuthController:
         )
 
     async def verify(
-        self,
-        refresh_token: str,
-        session_id: str,
-        code: str,
-        settings=settings,
+            self,
+            refresh_token: str,
+            session_id: str,
+            code: str,
+            settings=settings,
     ) -> None:
         if not self.redis_session:
             raise CustomException("Database connection is not initialized")
@@ -126,20 +122,16 @@ class AuthController:
             raise BadRequestException("Already Verified")
         return None
 
-    async def refresh_token(self, old_refresh_token: str, session_id: str) -> Token:
+    async def refresh_token(self, old_refresh_token: str) -> Token:
         if not self.redis_session:
             raise CustomException("Database connection is not initialized")
 
         user_id, ttl, session_id = await asyncio.gather(
             self.redis_session.get(old_refresh_token),
             self.redis_session.ttl(old_refresh_token),
-            self.redis_session.get(session_id),
         )
-        if not user_id or len(str(user_id)) < 5:
+        if not user_id:
             raise UnauthorizedException("Invalid Refresh Token")
-
-        if session_id != user_id:
-            raise UnauthorizedException("Please verify using 2 step authenication first")
 
         access_token = self.jwt_handler.encode(payload={"user_id": str(user_id)})
         refresh_token = self.jwt_handler.encode_refresh_token(
