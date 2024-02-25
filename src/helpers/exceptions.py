@@ -45,3 +45,9 @@ class DuplicateValueException(CustomException):
     code = HTTPStatus.UNPROCESSABLE_ENTITY
     error_code = HTTPStatus.UNPROCESSABLE_ENTITY
     message = HTTPStatus.UNPROCESSABLE_ENTITY.description
+
+
+class UserPendingVerificationError(CustomException):
+    code = HTTPStatus.BAD_REQUEST
+    error_code = HTTPStatus.BAD_REQUEST
+    message = HTTPStatus.BAD_REQUEST.description

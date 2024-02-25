@@ -34,7 +34,7 @@ class UserRepository:
             user = (await session.execute(query)).first()
         return UserRepository.base_return(user)
 
-    async def query_by_id(self, user_id: str, db_session: Session):
+    async def query_by_id(self, user_id, db_session: Session):
         query = self.adaptor.query_by_id(user_id)
         async with db_session.begin() as session:
             user = (await session.execute(query)).first()

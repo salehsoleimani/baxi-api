@@ -12,10 +12,10 @@ class UserAdaptor:
 
     @staticmethod
     def get_by_phone_number(phone_number: str):
-        return sa.select(User).where(func.lower(User.phone_number) == func.lower(phone_number))
+        return sa.select(User).where(User.phone_number == phone_number)
 
     @staticmethod
-    def get_by_id(user_id: str):
+    def get_by_id(user_id):
         return sa.select(User).where(User.id == user_id)
 
     @staticmethod
@@ -23,7 +23,7 @@ class UserAdaptor:
         return sa.select(*UserAdaptor.get_selects()).where(User.phone_number.ilike(phone_number))
 
     @staticmethod
-    def query_by_id(user_id: str):
+    def query_by_id(user_id):
         return sa.select(*UserAdaptor.get_selects()).where(User.id == user_id)
 
     @staticmethod

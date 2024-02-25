@@ -13,7 +13,6 @@ from pydantic import (
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-
 class Settings(BaseSettings):
     port: int = 80
     DATABASE_URL: str
@@ -22,6 +21,10 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str
     JWT_EXPIRE_MINUTES: int = 900
     SESSION_EXPIRE_MINUTES: int = 24 * 60 * 30
+    OTP_EXPIRE_SECONDS: int = 60 * 2
+    OTP_RESEND_SECONDS: int = 60
+    SMS_KEY: str
+    SMS_LINE: str
 
     class Config:
         env_file = ".env"

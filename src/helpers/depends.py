@@ -11,7 +11,7 @@ http_bearer = HTTPBearer()
 
 
 async def get_current_user(
-    request: Request, credentials: HTTPAuthorizationCredentials = Depends(http_bearer)
+        request: Request, credentials: HTTPAuthorizationCredentials = Depends(http_bearer)
 ):
     if credentials.scheme != "Bearer":
         raise ForbiddenException("Invalid Header")
@@ -29,7 +29,7 @@ async def get_current_user(
 
 
 async def get_current_user_with_refresh(
-    request: Request, credentials: HTTPAuthorizationCredentials = Depends(http_bearer)
+        request: Request, credentials: HTTPAuthorizationCredentials = Depends(http_bearer)
 ):
     if credentials.scheme != "Bearer":
         raise ForbiddenException("Invalid Header")
@@ -47,6 +47,6 @@ async def get_current_user_with_refresh(
 
 
 async def get_current_user_from_db(
-    db_session: Session = Depends(get_db), user_id: str = Depends(get_current_user)
+        db_session: Session = Depends(get_db), user_id: int = Depends(get_current_user)
 ):
     return await AuthController(db_session).me(user_id)
