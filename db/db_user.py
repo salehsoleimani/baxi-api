@@ -1,8 +1,7 @@
 from db.database import Base
+from db.models import User
 from schemas import UserBase
 from sqlalchemy.orm import Session
-
-User = Base.classes.user
 
 
 def create_user(request: UserBase, db: Session):

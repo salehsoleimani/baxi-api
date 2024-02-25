@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 from datetime import datetime
 from fastapi import Body
@@ -16,3 +18,12 @@ class UserDisplay(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class DataToken(BaseModel):
+    id: Optional[str] = None

@@ -11,7 +11,7 @@ alembic = "*"
 psycopg2 = "*"
 uvicorn = "*"
 python-dotenv = "*"
-passlib = "*"
+passlib = {extras = ["bcrypt"], version = "*"}
 
 [dev-packages]
 
