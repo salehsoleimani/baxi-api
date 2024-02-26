@@ -43,16 +43,16 @@ class AuthController:
 
             await self.redis_session.set(phone_number, otp_code, ex=settings.OTP_EXPIRE_SECONDS)
 
-            # sms_helper.send_verify_code(
-            #     number=phone_number,
-            #     template_id=400106,
-            #     parameters=[
-            #         {
-            #             "name": "code",
-            #             "value": otp_code,
-            #         },
-            #     ],
-            # )
+            sms_helper.send_verify_code(
+                number=phone_number,
+                template_id=400106,
+                parameters=[
+                    {
+                        "name": "code",
+                        "value": otp_code,
+                    },
+                ],
+            )
         except UserPendingVerificationError:
             raise HTTPException(
                 status_code=HTTPStatus.BAD_REQUEST,

@@ -1,8 +1,10 @@
 from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from redis import Redis
 
 from src.controllers.auth import AuthController
 from src.database.database import get_db
+from src.database.redis_client import get_redis
 from src.helpers.exceptions import ForbiddenException
 from src.repositories.jwt import JWTHandler
 from sqlalchemy.orm import Session
@@ -45,8 +47,3 @@ async def get_current_user_with_refresh(
         raise ForbiddenException("Invalid CSRF Token")
     return user_id
 
-
-async def get_current_user_from_db(
-        db_session: Session = Depends(get_db), user_id: int = Depends(get_current_user)
-):
-    return await AuthController(db_session).me(user_id)

@@ -16,7 +16,7 @@ class UserIn(BaseModel):
 
 
 class UserOut(BaseModel):
-    username: str
+    id: str
     updated_at: datetime.datetime
     created_at: datetime.datetime
 
