@@ -57,34 +57,15 @@ class AuthController:
                 detail="already exists a pending verification",
             )
 
-    async def register(self, name: str, last_name: str, phone_number: str) -> UserQuery:
-        user = await self.user_repository.get_by_phone_number(phone_number, db_session=self.db_session)
-
-        if user:
-            raise BadRequestException("User already exists with this phone number")
-
-        user = await self.user_repository.get_and_create(
-            name=name,
-            last_name=last_name,
-            phone_number=phone_number,
-            db_session=self.db_session,
-        )
-        assert user is not None
-        return UserQuery(
-            phone_number=user.phone_number,
-            updated_at=user.updated_at,
-            created_at=user.created_at,
-        )
-
-    async def login(self, phone_number: str) -> Token:
+    async def login(self, otp_code, phone_number: str) -> Token:
         if not self.redis_session:
             raise CustomException("Redis connection is not initialized")
 
         user = await self.user_repository.get_by_phone_number(phone_number, db_session=self.db_session)
-        otp = await self.redis_session.get(phone_number)
+        cached_otp_code = await self.redis_session.get(phone_number)
         print(user)
-        # if (not user) or #todo: check otp
-        if not user:
+        print(cached_otp_code)
+        if not cached_otp_code or cached_otp_code != otp_code:
             raise BadRequestException("Invalid credentials")
 
         refresh_token = self.jwt_handler.encode_refresh_token(
