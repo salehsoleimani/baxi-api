@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy import func
 
-from src.models.models import User
+from src.models.user import User
 from src.schemas.user import UserQuery
 
 

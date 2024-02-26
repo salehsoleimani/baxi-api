@@ -1,22 +1,28 @@
-from sqlalchemy.engine import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.automap import automap_base
+from sqlalchemy import MetaData, Table, Column, Integer, String, DateTime
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import declarative_base
 
-from src.config import config
+from src.config.config import settings
 
-engine = create_engine(url=config.settings.DATABASE_URL)
+engine = create_async_engine(url=settings.DATABASE_URL, echo=True)
 
-# Map Existing Tables to Base Model
-Base = automap_base()
-Base.prepare(engine, reflect=True)
-Base.metadata.create_all(engine)
-
-session_local = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+# Define a declarative base
+Base = declarative_base()
 
 
-def get_db():
-    session = session_local()
-    try:
+# Define your User model
+
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+# Create all tables
+# Base.metadata.create_all(bind=engine)
+
+
+async def get_db():
+    await create_tables()
+
+    async with AsyncSession(engine) as session:
         yield session
-    finally:
-        session.close()

@@ -3,7 +3,9 @@ from http import HTTPStatus
 from fastapi import HTTPException
 from typing import Optional
 from redis.asyncio.client import Redis
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+
+# from sqlalchemy.orm import Session
 from ..config.config import settings
 
 from ..helpers.exceptions import BadRequestException, CustomException, UnauthorizedException, \
@@ -21,7 +23,7 @@ class AuthController:
 
     def __init__(
             self,
-            db_session: Session,
+            db_session: AsyncSession,
             redis_session: Optional[Redis] = None,
             user_repository: Optional[UserRepository] = None,
     ):
@@ -41,16 +43,16 @@ class AuthController:
 
             await self.redis_session.set(phone_number, otp_code, ex=settings.OTP_EXPIRE_SECONDS)
 
-            sms_helper.send_verify_code(
-                number=phone_number,
-                template_id=400106,
-                parameters=[
-                    {
-                        "name": "code",
-                        "value": otp_code,
-                    },
-                ],
-            )
+            # sms_helper.send_verify_code(
+            #     number=phone_number,
+            #     template_id=400106,
+            #     parameters=[
+            #         {
+            #             "name": "code",
+            #             "value": otp_code,
+            #         },
+            #     ],
+            # )
         except UserPendingVerificationError:
             raise HTTPException(
                 status_code=HTTPStatus.BAD_REQUEST,
@@ -68,7 +70,8 @@ class AuthController:
         if not cached_otp_code or cached_otp_code != otp_code:
             raise BadRequestException("Invalid credentials")
 
-        user = self.user_repository.get_and_create(name="",last_name= "", phone_number=phone_number, db_session=self.db_session)
+        user = await self.user_repository.get_and_create(name="", last_name="", phone_number=phone_number,
+                                                   db_session=self.db_session)
 
         refresh_token = self.jwt_handler.encode_refresh_token(
             payload={"sub": "refresh_token", "verify": str(user.id)}
@@ -97,7 +100,7 @@ class AuthController:
         return None
 
     async def me(self, user_id) -> UserOut:
-        user = self.user_repository.query_by_id(user_id, db_session=self.db_session)
+        user =await self.user_repository.query_by_id(user_id, db_session=self.db_session)
         if not user:
             raise BadRequestException("Invalid credentials")
         return UserOut(
