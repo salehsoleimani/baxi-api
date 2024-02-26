@@ -4,7 +4,7 @@ import io
 from http import HTTPStatus
 from fastapi import HTTPException
 from typing import Optional
-
+from redis.asyncio.client import Redis
 from sqlalchemy.orm import Session
 
 # from pyotp import random_base32, totp
@@ -14,7 +14,6 @@ from ..helpers import sms_ir
 
 from ..helpers.exceptions import BadRequestException, CustomException, UnauthorizedException, \
     UserPendingVerificationError
-from ..database.redis_client import RedisManager
 from ..helpers.sms_ir import sms_helper
 from ..repositories.auth import AuthRepository
 from ..repositories.jwt import JWTHandler
@@ -31,7 +30,7 @@ class AuthController:
     def __init__(
             self,
             db_session: Session,
-            redis_session: Optional[RedisManager] = None,
+            redis_session: Optional[Redis] = None,
             user_repository: Optional[UserRepository] = None,
     ):
         self.user_repository = user_repository or self.user_repository
@@ -46,21 +45,21 @@ class AuthController:
         try:
             await self.auth_repository.send_otp(phone_number=phone_number, otp=otp_code,
                                                 redis_session=self.redis_session)
+            sms_helper.send_verify_code(
+                number=phone_number,
+                template_id=400106,
+                parameters=[
+                    {
+                        "name": "code",
+                        "value": otp_code,
+                    },
+                ],
+            )
         except UserPendingVerificationError:
             raise HTTPException(
                 status_code=HTTPStatus.BAD_REQUEST,
                 detail="already exists a pending verification",
             )
-        sms_helper.send_verify_code(
-            number=phone_number,
-            template_id=10000,
-            parameters=[
-                {
-                    "name": "code",
-                    "value": otp_code,
-                },
-            ],
-        )
 
     async def register(self, name: str, last_name: str, phone_number: str) -> UserQuery:
         user = await self.user_repository.get_by_phone_number(phone_number, db_session=self.db_session)
