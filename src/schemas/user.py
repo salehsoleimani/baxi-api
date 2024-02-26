@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 
 class UserQuery(BaseModel):
+    id: int
     phone_number: str
     updated_at: datetime.datetime
     created_at: datetime.datetime

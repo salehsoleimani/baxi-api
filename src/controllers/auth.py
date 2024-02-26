@@ -61,12 +61,14 @@ class AuthController:
         if not self.redis_session:
             raise CustomException("Redis connection is not initialized")
 
-        user = await self.user_repository.get_by_phone_number(phone_number, db_session=self.db_session)
+        # user = self.user_repository.get_by_phone_number(phone_number, db_session=self.db_session)
         cached_otp_code = await self.redis_session.get(phone_number)
-        print(user)
+        # print(user)
         print(cached_otp_code)
         if not cached_otp_code or cached_otp_code != otp_code:
             raise BadRequestException("Invalid credentials")
+
+        user = self.user_repository.get_and_create(name="",last_name= "", phone_number=phone_number, db_session=self.db_session)
 
         refresh_token = self.jwt_handler.encode_refresh_token(
             payload={"sub": "refresh_token", "verify": str(user.id)}
@@ -95,7 +97,7 @@ class AuthController:
         return None
 
     async def me(self, user_id) -> UserOut:
-        user = await self.user_repository.query_by_id(user_id, db_session=self.db_session)
+        user = self.user_repository.query_by_id(user_id, db_session=self.db_session)
         if not user:
             raise BadRequestException("Invalid credentials")
         return UserOut(
@@ -117,7 +119,7 @@ class AuthController:
         if not user_id or len(str(user_id)) < 5:
             raise UnauthorizedException("Invalid Refresh Token")
         elif session_id_redis != user_id:
-            user = await self.user_repository.query_by_id(user_id, db_session=self.db_session)
+            user = self.user_repository.query_by_id(user_id, db_session=self.db_session)
             assert user is not None
             # if not totp.TOTP(user.gauth).verify(code):
             #     raise BadRequestException("Invalid Code")
