@@ -1,21 +1,14 @@
 import asyncio
-import base64
-import io
 from http import HTTPStatus
 from fastapi import HTTPException
 from typing import Optional
 from redis.asyncio.client import Redis
 from sqlalchemy.orm import Session
-
-# from pyotp import random_base32, totp
-
 from ..config.config import settings
-from ..helpers import sms_ir
 
 from ..helpers.exceptions import BadRequestException, CustomException, UnauthorizedException, \
     UserPendingVerificationError
 from ..helpers.sms_ir import sms_helper
-from ..repositories.auth import AuthRepository
 from ..repositories.jwt import JWTHandler
 from ..repositories.users import UserRepository
 from ..schemas.auth import Token
@@ -24,7 +17,6 @@ from ..schemas.user import UserOut, UserQuery
 
 class AuthController:
     user_repository = UserRepository()
-    auth_repository = AuthRepository()
     jwt_handler = JWTHandler
 
     def __init__(
@@ -37,14 +29,18 @@ class AuthController:
         self.db_session = db_session
         self.redis_session = redis_session
 
-    # todo: implement OTP
     async def send_otp(self, phone_number: str, otp_code: str) -> UserQuery:
         if not self.redis_session:
             raise CustomException("redis connection is not initialized")
 
         try:
-            await self.auth_repository.send_otp(phone_number=phone_number, otp=otp_code,
-                                                redis_session=self.redis_session)
+            otp_session = await self.redis_session.get(phone_number)
+            ttl = await self.redis_session.ttl(phone_number)
+            if otp_session and settings.OTP_EXPIRE_SECONDS - settings.OTP_RESEND_SECONDS > ttl:
+                raise UserPendingVerificationError
+
+            await self.redis_session.set(phone_number, otp_code, ex=settings.OTP_EXPIRE_SECONDS)
+
             sms_helper.send_verify_code(
                 number=phone_number,
                 template_id=400106,
@@ -85,6 +81,7 @@ class AuthController:
             raise CustomException("Redis connection is not initialized")
 
         user = await self.user_repository.get_by_phone_number(phone_number, db_session=self.db_session)
+        otp = await self.redis_session.get(phone_number)
         print(user)
         # if (not user) or #todo: check otp
         if not user:

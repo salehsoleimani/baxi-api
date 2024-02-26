@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from src.config.config import settings
 from src.routers.auth import router as auth_router
 
-app = FastAPI(docs_url='/', )
+app = FastAPI(docs_url='/docs', )
 app.include_router(auth_router)
 
 if __name__ == "__main__":
