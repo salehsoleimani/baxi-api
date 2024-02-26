@@ -71,7 +71,7 @@ class AuthController:
             raise BadRequestException("Invalid credentials")
 
         user = await self.user_repository.get_and_create(name="", last_name="", phone_number=phone_number,
-                                                   db_session=self.db_session)
+                                                         db_session=self.db_session)
 
         refresh_token = self.jwt_handler.encode_refresh_token(
             payload={"sub": "refresh_token", "verify": str(user.id)}
@@ -100,39 +100,12 @@ class AuthController:
         return None
 
     async def me(self, user_id) -> UserOut:
-        user =await self.user_repository.query_by_id(user_id, db_session=self.db_session)
+        user = await self.user_repository.query_by_id(user_id, db_session=self.db_session)
         if not user:
             raise BadRequestException("Invalid credentials")
         return UserOut(
             username=user.username, updated_at=user.updated_at, created_at=user.created_at
         )
-
-    async def verify(
-            self,
-            refresh_token: str,
-            session_id: str,
-            code: str,
-            settings=settings,
-    ) -> None:
-        if not self.redis_session:
-            raise CustomException("Database connection is not initialized")
-        session_id_redis, user_id = await asyncio.gather(
-            self.redis_session.get(session_id), self.redis_session.get(refresh_token)
-        )
-        if not user_id or len(str(user_id)) < 5:
-            raise UnauthorizedException("Invalid Refresh Token")
-        elif session_id_redis != user_id:
-            user = self.user_repository.query_by_id(user_id, db_session=self.db_session)
-            assert user is not None
-            # if not totp.TOTP(user.gauth).verify(code):
-            #     raise BadRequestException("Invalid Code")
-            print(user_id)
-            await self.redis_session.set(
-                session_id, value=user_id, ex=(settings.SESSION_EXPIRE_MINUTES) * 60
-            )
-        else:
-            raise BadRequestException("Already Verified")
-        return None
 
     async def refresh_token(self, old_refresh_token: str) -> Token:
         if not self.redis_session:
