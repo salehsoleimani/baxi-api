@@ -1,26 +1,36 @@
-import uvicorn as uvicorn
+import uvicorn
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.cors import CORSMiddleware
+from starlette.requests import Request
 
-from src.config.config import settings
-from src.routers.auth import router as auth_router
+app = FastAPI(docs_url='/docs')
 
-app = FastAPI(docs_url='/docs', )
-origins = ["*"]
+
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1",
+]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET"],
     allow_headers=["*"],
 )
-app.include_router(auth_router)
+# app.add_middleware(TrustedHostMiddleware, allowed_hosts=origins)
+
+@app.get("/get-my-ip")
+async def get_my_ip(request: Request):
+    client_host = request.client.host
+    print({"Client IP": client_host})
 
 if __name__ == "__main__":
     uvicorn.run(
         host="0.0.0.0",
-        port=settings.port,
+        port=4000,
         app="main:app",
         reload=True,
         loop="uvloop",
