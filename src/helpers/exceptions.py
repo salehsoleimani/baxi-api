@@ -51,3 +51,9 @@ class UserPendingVerificationError(CustomException):
     code = HTTPStatus.BAD_REQUEST
     error_code = HTTPStatus.BAD_REQUEST
     message = HTTPStatus.BAD_REQUEST.description
+
+
+class CSRFTokenError(CustomException):
+    code = HTTPStatus.UNAUTHORIZED
+    error_code = HTTPStatus.UNAUTHORIZED
+    message = "Invalid CSRF token"

@@ -4,7 +4,7 @@ from typing import Any, Dict
 from jose import ExpiredSignatureError, JWTError, jwt
 
 from ..config.config import settings
-from ..helpers.exceptions import CustomException
+from ..helpers.exceptions import CustomException, CSRFTokenError
 
 
 class JWTDecodeError(CustomException):
@@ -61,3 +61,16 @@ class JWTHandler:
             )
         except JWTError as exception:
             raise JWTDecodeError() from exception
+
+    @staticmethod
+    def validate_csrf_token(csrf_token: str) -> bool:
+        try:
+            decoded_token = JWTHandler.decode(csrf_token)
+            exp = decoded_token.get("exp")
+            if exp and datetime.utcfromtimestamp(exp) < datetime.utcnow():
+                raise JWTExpiredError
+            return True
+        except ExpiredSignatureError:
+            raise JWTExpiredError
+        except Exception:
+            raise CSRFTokenError

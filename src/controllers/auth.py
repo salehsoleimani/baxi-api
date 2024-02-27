@@ -107,7 +107,7 @@ class AuthController:
             username=user.username, updated_at=user.updated_at, created_at=user.created_at
         )
 
-    async def refresh_token(self, old_refresh_token: str) -> Token:
+    async def refresh_token(self, old_refresh_token: str, csrf_token: str) -> Token:
         if not self.redis_session:
             raise CustomException("Database connection is not initialized")
 
@@ -117,6 +117,9 @@ class AuthController:
         )
         if not user_id:
             raise UnauthorizedException("Invalid Refresh Token")
+
+        if not self.jwt_handler.validate_csrf_token(csrf_token):
+            raise CustomException("Invalid CSRF token")
 
         access_token = self.jwt_handler.encode(payload={"user_id": str(user_id)})
         refresh_token = self.jwt_handler.encode_refresh_token(
