@@ -3,8 +3,11 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 
-app = FastAPI(docs_url='/docs')
+from src.helpers.response_logger import ResponseLoggerMiddleware
+from src.routers import auth
 
+app = FastAPI(docs_url='/docs')
+app.include_router(auth.router)
 
 origins = [
     "http://localhost",
@@ -14,18 +17,24 @@ origins = [
 ]
 
 app.add_middleware(
+    ResponseLoggerMiddleware
+)
+app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["GET"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 # app.add_middleware(TrustedHostMiddleware, allowed_hosts=origins)
+# app.add_middleware(ResponseLoggerMiddleware, allowed_hosts=origins)
 
-@app.get("/get-my-ip")
-async def get_my_ip(request: Request):
-    client_host = request.client.host
-    print({"Client IP": client_host})
+# @app.get("/get-my-ip")
+# async def get_my_ip(request: Request):
+#     client_host = request.client.host
+#     print({"Client IP": client_host})
+
+app.include_router(auth.router)
 
 if __name__ == "__main__":
     uvicorn.run(

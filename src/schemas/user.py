@@ -11,7 +11,7 @@ class UserQuery(BaseModel):
 
 
 class UserIn(BaseModel):
-    phone_number: str = Body(regex="^09(1[0-9]|3[1-9])-?[0-9]{3}-?[0-9]{4}$")
+    phone_number: str = Body(regex="((0?9)|(\+?989))\d{2}\W?\d{3}\W?\d{4}")
     otp_code: str
 
 
@@ -22,4 +22,4 @@ class UserOut(BaseModel):
 
 
 class PhoneNumber(BaseModel):
-    phone_number: str = Body(regex="^09(1[0-9]|3[1-9])-?[0-9]{3}-?[0-9]{4}$")
+    phone_number: str = Body(regex="((0?9)|(\+?989))\d{2}\W?\d{3}\W?\d{4}")

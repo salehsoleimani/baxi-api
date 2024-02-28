@@ -4,14 +4,12 @@ import string
 import time
 from fastapi import APIRouter, Depends, Request, Response, Form
 from sqlalchemy.orm import Session
-
-# from sqlalchemy.orm import Session
 from src.controllers.auth import AuthController
 from src.database.database import get_db
 from redis.asyncio.client import Redis
 from src.database.redis_client import get_redis
-from src.helpers.depends import get_current_user_with_refresh
-from src.schemas.user import UserIn, UserOut, UserQuery, PhoneNumber
+from src.helpers.depends import get_current_user_with_refresh, get_current_user
+from src.schemas.user import UserIn, UserOut, PhoneNumber
 
 router = APIRouter(
     prefix="/api/auth",
@@ -105,7 +103,7 @@ async def refresh_token(
 
 
 @router.get("/me")
-async def me(current_user: UserOut = Depends(get_current_user_with_refresh)):
+async def me(current_user: UserOut = Depends(get_current_user)):
     return current_user
 
 
@@ -133,12 +131,3 @@ async def logout(
         samesite="strict",
     )
     return None
-
-
-@router.get("/gett")
-async def gett(
-        redis_db: Redis = Depends(get_redis),
-):
-    ss = await redis_db.get(
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJyZWZyZXNoX3Rva2VuIiwidmVyaWZ5IjoiMiIsImV4cCI6MTc0NTI3OTQ4MH0.ID6kQ72n8iRgIFIquz2fswpiVxYf7vlCW0pcubrBr0o')
-    print(ss)
