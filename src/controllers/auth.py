@@ -34,11 +34,11 @@ class AuthController:
     async def send_otp(self, phone_number: str, otp_code: str) -> UserQuery:
         if not self.redis_session:
             raise CustomException("redis connection is not initialized")
-
         try:
             otp_session = await self.redis_session.get(phone_number)
+            # handle otp spam
             ttl = await self.redis_session.ttl(phone_number)
-            if otp_session and settings.OTP_EXPIRE_SECONDS - settings.OTP_RESEND_SECONDS > ttl:
+            if otp_session and settings.OTP_EXPIRE_SECONDS - settings.OTP_RESEND_SECONDS < ttl:
                 raise UserPendingVerificationError
 
             await self.redis_session.set(phone_number, otp_code, ex=settings.OTP_EXPIRE_SECONDS)
