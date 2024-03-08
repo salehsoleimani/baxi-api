@@ -1,7 +1,7 @@
 from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from src.helpers.exceptions import ForbiddenException
-from src.repositories.jwt import JWTHandler
+from app.helpers.exceptions import ForbiddenException
+from app.repositories.jwt import JWTHandler
 
 http_bearer = HTTPBearer()
 

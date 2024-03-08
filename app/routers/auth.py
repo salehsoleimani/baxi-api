@@ -4,12 +4,12 @@ import string
 import time
 from fastapi import APIRouter, Depends, Request, Response, Form
 from sqlalchemy.orm import Session
-from src.controllers.auth import AuthController
-from src.database.database import get_db
+from app.controllers.auth import AuthController
+from app.database.database import get_db
 from redis.asyncio.client import Redis
-from src.database.redis_client import get_redis
-from src.helpers.depends import get_current_user_with_refresh, get_current_user
-from src.schemas.user import UserIn, UserOut, PhoneNumber
+from app.database.redis_client import get_redis
+from app.helpers.depends import get_current_user_with_refresh, get_current_user
+from app.schemas.user import UserIn, UserOut, PhoneNumber
 
 router = APIRouter(
     prefix="/api/auth",

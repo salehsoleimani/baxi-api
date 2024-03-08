@@ -3,8 +3,8 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 
-from src.helpers.response_logger import ResponseLoggerMiddleware
-from src.routers import auth
+from app.helpers.response_logger import ResponseLoggerMiddleware
+from app.routers import auth
 
 app = FastAPI(docs_url='/docs')
 app.include_router(auth.router)

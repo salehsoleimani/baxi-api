@@ -1,8 +1,8 @@
 import sqlalchemy as sa
 from sqlalchemy import func
 
-from src.models.user import User
-from src.schemas.user import UserQuery
+from app.models.user import User
+from app.schemas.user import UserQuery
 
 
 class UserAdaptor:

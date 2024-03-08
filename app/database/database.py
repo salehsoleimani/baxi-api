@@ -2,7 +2,7 @@ from sqlalchemy import MetaData, Table, Column, Integer, String, DateTime
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base
 
-from src.config.config import settings
+from app.config.config import settings
 
 engine = create_async_engine(url=settings.DATABASE_URL, echo=True)
 
