@@ -17,4 +17,4 @@ jobs:
           LIARA_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
         run: |
           npm i -g @liara/cli@5
-          liara deploy --app="baxi-api" --api-token="$LIARA_TOKEN" --no-app-logs --port=4000
+          liara deploy --app="baxiapi" --api-token="$LIARA_TOKEN" --no-app-logs --port=4000
