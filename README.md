@@ -5,24 +5,17 @@
 ### API
 
 <p>
-   &emsp; 
     <img alt="Python" src="https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54">
-  &emsp; 
     <img alt="Docker" src="https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white">
-  &emsp; 
     <img alt="Jwt" src="https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens">
-  &emsp; 
     <img alt="Fast Api" src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi">
-  &emsp; 
     <img alt="Swagger" src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=Swagger&logoColor=white">
 </p>
 
 ### DBMS
 
 <p>
-  &emsp; 
     <img alt="Postgresql" src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white">
-  &emsp; 
     <img alt="Docker" src="https://img.shields.io/badge/redis-CC0000.svg?&style=for-the-badge&logo=redis&logoColor=white">
 </p>
 
